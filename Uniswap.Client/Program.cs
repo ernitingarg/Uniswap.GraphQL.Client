@@ -46,12 +46,12 @@ namespace Uniswap.Client
         {
             _s_watch.Restart();
             var result = await uniswapGraphQl.GetOwnerPosition(245950);
-            var adjustedAmounts = PriceHelper.GetPositionAmounts(result);
+            var adjustedAmounts = PriceHelper.GetPositionAmounts(result, 5, 2);
 
             Console.WriteLine(
                 $"[{DateTime.Now}] " +
-                $"{result.Position.Token0.Symbol} position {adjustedAmounts.amount0}, " +
-                $"{result.Position.Token1.Symbol} position {adjustedAmounts.amount1} " +
+                $"{result.Position.Token0.Symbol} position {adjustedAmounts.Amount0}, " +
+                $"{result.Position.Token1.Symbol} position {adjustedAmounts.Amount1} " +
                 $"[Time taken: {_s_watch.ElapsedMilliseconds} ms]");
             _s_watch.Stop();
         }

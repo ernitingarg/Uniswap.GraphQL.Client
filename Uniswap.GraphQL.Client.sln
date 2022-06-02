@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uniswap.GraphQL", "Uniswap.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uniswap.Client", "Uniswap.Client\Uniswap.Client.csproj", "{0BD6E4D8-37FA-468D-BA9D-0C32C041080D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uniswap.WebApi", "Uniswap.WebApi\Uniswap.WebApi.csproj", "{7879C719-B423-4AB9-BE92-FC3C18A2A396}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0BD6E4D8-37FA-468D-BA9D-0C32C041080D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BD6E4D8-37FA-468D-BA9D-0C32C041080D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BD6E4D8-37FA-468D-BA9D-0C32C041080D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7879C719-B423-4AB9-BE92-FC3C18A2A396}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7879C719-B423-4AB9-BE92-FC3C18A2A396}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7879C719-B423-4AB9-BE92-FC3C18A2A396}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7879C719-B423-4AB9-BE92-FC3C18A2A396}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

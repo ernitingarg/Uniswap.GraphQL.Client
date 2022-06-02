@@ -1,13 +1,14 @@
 ﻿using System;
-using Uniswap.GraphQL;
 using Uniswap.GraphQL.Entities;
 
-namespace Uniswap.Client
+namespace Uniswap.GraphQL
 {
-    class PriceHelper
+    public class PriceHelper
     {
-        public static (double amount0, double amount1) GetPositionAmounts(
-            OwnerPosition owenrPosition)
+        public static (double Amount0, double Amount1) GetPositionAmounts(
+            OwnerPosition owenrPosition,
+            int? precision0 = null,
+            int? precision1 = null)
         {
             var position = owenrPosition.Position;
             double positionLiquidity = double.Parse(position.Liquidity);
@@ -19,12 +20,12 @@ namespace Uniswap.Client
             var amount0Adjusted = DecimalAdjustment(
                 amounts.amount0,
                 position.Token0.Decimals,
-                5);
+                precision0);
 
             var amount1Adjusted = DecimalAdjustment(
                 amounts.amount1,
                 position.Token1.Decimals,
-                2);
+                precision1);
 
             return (amount0Adjusted, amount1Adjusted);
         }
@@ -59,10 +60,18 @@ namespace Uniswap.Client
         static double DecimalAdjustment(
             double amount,
             string decimals,
-            int precisions)
+            int? precisions)
         {
             double adjustedAmount = amount / Math.Pow(10, int.Parse(decimals));
-            return Math.Truncate(adjustedAmount * Math.Pow(10, precisions)) / Math.Pow(10, precisions);
+
+            if (precisions.HasValue)
+            {
+                return Math.Truncate(
+                    adjustedAmount * Math.Pow(10, precisions.Value))
+                       / Math.Pow(10, precisions.Value);
+            }
+
+            return adjustedAmount;
         }
     }
 }
