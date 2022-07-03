@@ -8,7 +8,8 @@ namespace Uniswap.GraphQL
 {
     public class Uniswap : IUniswap
     {
-        private readonly IGraphQLClient _graphQlClient;
+        readonly IGraphQLClient _graphQlClient;
+        const int MaxRetryCount = 3;
 
         public Uniswap(IGraphQLClient graphQlClient)
         {
@@ -17,29 +18,14 @@ namespace Uniswap.GraphQL
                                  nameof(graphQlClient));
         }
 
-        public async Task<TopTokens> GetTopTokens()
-        {
-            var query = new GraphQLRequest
-            {
-                Query = @"
-                {
-                  tokens (first: 5, orderDirection: desc){
-                    symbol
-                    name
-                    volume
-                    volumeUSD
-                    totalSupply
-                  }
-                }
-                "
-            };
 
-            var response = await _graphQlClient.SendQueryAsync<TopTokens>(query);
-            return response.Data;
-        }
-
-        public async Task<OwnerPosition> GetOwnerPosition(int poolId)
+        public async Task<LiquidityPosition> GetLiquidityPosition(
+            int poolId,
+            int? precision0 = null,
+            int? precision1 = null)
         {
+            int retry = 0;
+
             var query = new GraphQLRequest
             {
                 Query = @"
@@ -70,8 +56,34 @@ namespace Uniswap.GraphQL
                 "
             };
 
-            var response = await _graphQlClient.SendQueryAsync<OwnerPosition>(query);
-            return response.Data;
+        API:
+            GraphQLResponse<LiquidityPosition> response;
+            try
+            {
+                response = await _graphQlClient.SendQueryAsync<LiquidityPosition>(query);
+            }
+            catch (Exception)
+            {
+                retry++;
+                if (retry <= MaxRetryCount)
+                {
+                    goto API;
+                }
+
+                throw;
+            }
+
+            var result = response.Data;
+
+            var amounts = PriceHelper.GetPositionAmounts(
+                response.Data,
+                precision0,
+                precision1);
+
+            result.Position.Amount0 = amounts.Amount0;
+            result.Position.Amount1 = amounts.Amount1;
+
+            return result;
         }
     }
 }

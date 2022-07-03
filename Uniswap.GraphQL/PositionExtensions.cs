@@ -3,9 +3,9 @@ using Uniswap.GraphQL.Entities;
 
 namespace Uniswap.GraphQL
 {
-    public static class PositionExtensions
+    internal static class PositionExtensions
     {
-        public static Price GetPrice(this Position position)
+        internal static Price GetPrice(this Position position)
         {
             // Prices (not decimal adjusted)
 
@@ -17,7 +17,7 @@ namespace Uniswap.GraphQL
             return new Price(priceCurrent, priceLower, priceUpper);
         }
 
-        public static Price GetPriceSqrt(this Position position)
+        internal static Price GetPriceSqrt(this Position position)
         {
             // Square roots of the prices (not decimal adjusted)
 
@@ -29,7 +29,7 @@ namespace Uniswap.GraphQL
         }
     }
 
-    public class Price
+    internal class Price
     {
         public Price(
             double currentPrice,

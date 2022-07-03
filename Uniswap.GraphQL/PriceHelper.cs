@@ -3,14 +3,14 @@ using Uniswap.GraphQL.Entities;
 
 namespace Uniswap.GraphQL
 {
-    public class PriceHelper
+    internal class PriceHelper
     {
-        public static (double Amount0, double Amount1) GetPositionAmounts(
-            OwnerPosition owenrPosition,
+        internal static (double Amount0, double Amount1) GetPositionAmounts(
+            LiquidityPosition liquidityPosition,
             int? precision0 = null,
             int? precision1 = null)
         {
-            var position = owenrPosition.Position;
+            var position = liquidityPosition.Position;
             double positionLiquidity = double.Parse(position.Liquidity);
             var price = position.GetPrice();
             var priceSqrt = position.GetPriceSqrt();

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
-using Uniswap.GraphQL;
 
 namespace Uniswap.WebApi.Controllers
 {
@@ -30,20 +29,22 @@ namespace Uniswap.WebApi.Controllers
             int? precision0 = null,
             int? precision1 = null)
         {
-            var result = await _uniswapGraphQl.GetOwnerPosition(id);
-            var adjustedAmounts = PriceHelper.GetPositionAmounts(result, precision0, precision1);
+            var result = await _uniswapGraphQl.GetLiquidityPosition(
+                id,
+                precision0,
+                precision1);
 
             var ret = new
             {
                 Token0 = new
                 {
                     result.Position.Token0.Symbol,
-                    Amount = adjustedAmounts.Amount0
+                    Amount = result.Position.Amount0
                 },
                 Token1 = new
                 {
                     result.Position.Token1.Symbol,
-                    Amount = adjustedAmounts.Amount1
+                    Amount = result.Position.Amount1
                 }
             };
 

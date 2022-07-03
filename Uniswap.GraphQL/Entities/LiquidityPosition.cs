@@ -1,6 +1,6 @@
 ﻿namespace Uniswap.GraphQL.Entities
 {
-    public class OwnerPosition
+    public class LiquidityPosition
     {
         public Position Position { get; set; }
     }

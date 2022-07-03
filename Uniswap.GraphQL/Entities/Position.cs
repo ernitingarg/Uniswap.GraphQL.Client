@@ -10,5 +10,7 @@
         public string Liquidity { get; set; }
         public Tick TickLower { get; set; }
         public Tick TickUpper { get; set; }
+        public double Amount0 { get; set; }
+        public double Amount1 { get; set; }
     }
 }
