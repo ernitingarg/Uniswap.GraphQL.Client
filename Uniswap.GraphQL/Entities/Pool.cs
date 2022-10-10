@@ -6,5 +6,8 @@ namespace Uniswap.GraphQL.Entities
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string SqrtPrice { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Token0Price { get; set; }
     }
 }

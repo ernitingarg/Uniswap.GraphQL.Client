@@ -10,7 +10,8 @@
         public string Liquidity { get; set; }
         public Tick TickLower { get; set; }
         public Tick TickUpper { get; set; }
-        public double Amount0 { get; set; }
-        public double Amount1 { get; set; }
+        public double Position0Amount { get; set; }
+        public double Position1Amount { get; set; }
+        public double Price0Amount { get; set; }
     }
 }

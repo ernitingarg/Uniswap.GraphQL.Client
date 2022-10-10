@@ -1,53 +1,71 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.Timers;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
+using log4net;
 
 namespace Uniswap.Client
 {
-    class Program
+    public class Program
     {
         static readonly Stopwatch StopWatch = new Stopwatch();
         const string UniswapUrl = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
 
-        static async Task Main(string[] args)
+        static readonly ILog SLogger = LogManager.GetLogger(
+            MethodBase.GetCurrentMethod()?.DeclaringType);
+
+        static void Main(string[] args)
         {
-            Console.WriteLine("1. Please input pool id.");
-
-            int poolId;
-            while (!int.TryParse(Console.ReadLine(), out poolId))
+            bool validInput = true;
+            if (!int.TryParse(ConfigurationManager.AppSettings["PoolId"], out var poolId))
             {
                 Console.WriteLine(
-                    "Entered pool id is not in correct integer format, please input again.");
+                    "Configuration for key 'PoolId' is not in correct integer format.");
+                validInput = false;
             }
 
-            Console.WriteLine(
-                "2. Please input decimal precision for amount0 or input 0 for default.");
-            int precision0;
-            while (!int.TryParse(Console.ReadLine(), out precision0))
+            if (!int.TryParse(
+                    ConfigurationManager.AppSettings["PrecisionForPosition0"],
+                    out var precisionForPosition0))
             {
                 Console.WriteLine(
-                    "Entered precision is not in correct integer format, please input again.");
+                    "Configuration for key 'PrecisionForPosition0' is not in correct integer format.");
+                validInput = false;
             }
 
-            Console.WriteLine(
-                "3. Please input decimal precision for amount1 or input 0 for default.");
-            int precision1;
-            while (!int.TryParse(Console.ReadLine(), out precision1))
+            if (!int.TryParse(
+                    ConfigurationManager.AppSettings["PrecisionForPosition1"],
+                    out var precisionForPosition1))
             {
                 Console.WriteLine(
-                    "Entered precision is not in correct integer format, please input again.");
+                    "Configuration for key 'PrecisionForPosition1' is not in correct integer format.");
+                validInput = false;
             }
 
-            Console.WriteLine(
-                "4. Please input time interval in seconds to fetch the data.");
-            int interval;
-            while (!int.TryParse(Console.ReadLine(), out interval))
+            if (!int.TryParse(
+                    ConfigurationManager.AppSettings["PrecisionForCurrentPrice"],
+                    out var precisionForCurrentPrice))
             {
                 Console.WriteLine(
-                    "Entered time interval is not in correct integer format, please input again.");
+                    "Configuration for key 'PrecisionForCurrentPrice' is not in correct integer format.");
+                validInput = false;
+            }
+
+            if (!int.TryParse(
+                    ConfigurationManager.AppSettings["IntervalInSeconds"],
+                    out var interval))
+            {
+                Console.WriteLine(
+                    "Configuration for key 'IntervalInSeconds' is not in correct integer format.");
+                validInput = false;
+            }
+
+            if (!validInput)
+            {
+                return;
             }
 
             var graphQlOptions = new GraphQLHttpClientOptions
@@ -61,11 +79,21 @@ namespace Uniswap.Client
 
             var unisawp = new GraphQL.Uniswap(graphQlClient);
 
+            int retry = 0;
+            int sum = 0;
+            do
+            {
+                retry++;
+                sum += 5 * retry;
+            } while (sum < interval);
+
             var t = new Timer();
             t.Elapsed += (sender, e) => Callback(unisawp,
                 poolId,
-                precision0 == 0 ? null : (int?)precision0,
-                precision1 == 0 ? null : (int?)precision1);
+                retry - 1,
+                precisionForPosition0 == 0 ? null : (int?)precisionForPosition0,
+                precisionForPosition1 == 0 ? null : (int?)precisionForPosition1,
+                precisionForCurrentPrice == 0 ? null : (int?)precisionForCurrentPrice);
 
             t.Interval = TimeSpan.FromSeconds(interval).TotalMilliseconds;
             t.Enabled = true;
@@ -82,17 +110,40 @@ namespace Uniswap.Client
         static async void Callback(
             GraphQL.Uniswap uniswapGraphQl,
             int poolId,
-            int? precision0,
-            int? precision1)
+            int maxRetryCount,
+            int? precisionForPosition0,
+            int? precisionForPosition1,
+            int? precisionForCurrentPrice)
         {
             StopWatch.Restart();
-            var result = await uniswapGraphQl.GetLiquidityPosition(poolId, precision0, precision1);
+            string msg = string.Empty;
 
-            Console.WriteLine(
-                $"[{DateTime.Now}] " +
-                $"{result.Position.Token0.Symbol} position {result.Position.Amount0}, " +
-                $"{result.Position.Token1.Symbol} position {result.Position.Amount1} " +
-                $"[Time taken: {StopWatch.ElapsedMilliseconds} ms]");
+            try
+            {
+                var result = await uniswapGraphQl.GetLiquidityPosition(
+                    poolId,
+                    maxRetryCount,
+                    precisionForPosition0,
+                    precisionForPosition1,
+                    precisionForCurrentPrice);
+
+                msg = $"[{DateTime.Now}] " +
+                      $"{result.Position.Token0.Symbol} position {result.Position.Position0Amount}, " +
+                      $"{result.Position.Token1.Symbol} position {result.Position.Position1Amount}, " +
+                      $"Current Price {result.Position.Price0Amount} ({result.Position.Token0.Symbol} per {result.Position.Token1.Symbol}) " +
+                      $"[Time taken: {StopWatch.ElapsedMilliseconds} ms]";
+            }
+            catch(Exception ex)
+            {
+                SLogger.Error(ex);
+                msg = $"[{DateTime.Now}] Unable to retrieve the data from server after {maxRetryCount} retries.";
+            }
+            finally
+            {
+                SLogger.Info(msg);
+                Console.WriteLine(msg);
+            }
+
             StopWatch.Stop();
         }
     }

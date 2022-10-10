@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Abstractions;
+using log4net;
 using Uniswap.GraphQL.Entities;
 
 namespace Uniswap.GraphQL
@@ -9,7 +12,8 @@ namespace Uniswap.GraphQL
     public class Uniswap : IUniswap
     {
         readonly IGraphQLClient _graphQlClient;
-        const int MaxRetryCount = 3;
+        static readonly ILog SLogger = LogManager.GetLogger(
+            MethodBase.GetCurrentMethod()?.DeclaringType);
 
         public Uniswap(IGraphQLClient graphQlClient)
         {
@@ -21,8 +25,10 @@ namespace Uniswap.GraphQL
 
         public async Task<LiquidityPosition> GetLiquidityPosition(
             int poolId,
-            int? precision0 = null,
-            int? precision1 = null)
+            int maxRetryCount,
+            int? precisionForPosition0 = null,
+            int? precisionForPosition1 = null,
+            int? precisionForCurrentPrice = null)
         {
             int retry = 0;
 
@@ -43,6 +49,7 @@ namespace Uniswap.GraphQL
                     }
                     pool {
                       sqrtPrice
+                      token0Price
                     }
                     liquidity
                     tickLower {
@@ -65,8 +72,15 @@ namespace Uniswap.GraphQL
             catch (Exception)
             {
                 retry++;
-                if (retry <= MaxRetryCount)
+                if (retry <= maxRetryCount)
                 {
+                    int sleepInterval = 5000 * retry;
+
+                    string msg = $"[{DateTime.Now}] Retry[{retry}] after {sleepInterval} seconds.";
+                    SLogger.Info(msg);
+                    Console.WriteLine(msg);
+
+                    Thread.Sleep(sleepInterval);
                     goto API;
                 }
 
@@ -75,13 +89,18 @@ namespace Uniswap.GraphQL
 
             var result = response.Data;
 
-            var amounts = PriceHelper.GetPositionAmounts(
+            var positionAmounts = PriceHelper.GetPositionAmounts(
                 response.Data,
-                precision0,
-                precision1);
+                precisionForPosition0,
+                precisionForPosition1);
 
-            result.Position.Amount0 = amounts.Amount0;
-            result.Position.Amount1 = amounts.Amount1;
+            var priceAmounts = PriceHelper.GetPriceAmounts(
+                response.Data,
+                precisionForCurrentPrice);
+
+            result.Position.Position0Amount = positionAmounts.Position0;
+            result.Position.Position1Amount = positionAmounts.Position1;
+            result.Position.Price0Amount = priceAmounts.Price0;
 
             return result;
         }

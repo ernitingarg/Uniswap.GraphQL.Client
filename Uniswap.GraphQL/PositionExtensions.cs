@@ -27,6 +27,11 @@ namespace Uniswap.GraphQL
 
             return new Price(priceCurrentSqrt, priceLowerSqrt, priceUpperSqrt);
         }
+
+        internal static double GetTokenPrice(this Position position)
+        {
+            return double.Parse(position.Pool.Token0Price);
+        }
     }
 
     internal class Price

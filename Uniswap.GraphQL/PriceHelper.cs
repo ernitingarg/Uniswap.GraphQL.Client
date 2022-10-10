@@ -5,32 +5,46 @@ namespace Uniswap.GraphQL
 {
     internal class PriceHelper
     {
-        internal static (double Amount0, double Amount1) GetPositionAmounts(
+        internal static (double Position0, double Position1) GetPositionAmounts(
             LiquidityPosition liquidityPosition,
-            int? precision0 = null,
-            int? precision1 = null)
+            int? precisionForPosition0 = null,
+            int? precisionForPosition1 = null)
         {
             var position = liquidityPosition.Position;
             double positionLiquidity = double.Parse(position.Liquidity);
             var price = position.GetPrice();
             var priceSqrt = position.GetPriceSqrt();
 
-            var amounts = CalculateAmounts(positionLiquidity, price, priceSqrt);
+            var positionAmounts = CalculatePositionAmounts(positionLiquidity, price, priceSqrt);
 
-            var amount0Adjusted = DecimalAdjustment(
-                amounts.amount0,
+            var position0AdjustedAmount = DecimalTruncateAdjustment(
+                positionAmounts.amount0,
                 position.Token0.Decimals,
-                precision0);
+                precisionForPosition0);
 
-            var amount1Adjusted = DecimalAdjustment(
-                amounts.amount1,
+            var position1AdjustedAmount = DecimalTruncateAdjustment(
+                positionAmounts.amount1,
                 position.Token1.Decimals,
-                precision1);
+                precisionForPosition1);
 
-            return (amount0Adjusted, amount1Adjusted);
+            return (position0AdjustedAmount, position1AdjustedAmount);
         }
 
-        static (double amount0, double amount1) CalculateAmounts(
+        internal static (double Price0, double Price1) GetPriceAmounts(
+            LiquidityPosition liquidityPosition,
+            int? precisionForPrice0 = null)
+        {
+            var position = liquidityPosition.Position;
+            var price0 = position.GetTokenPrice();
+
+            var price0AdjustedAmount = RoundAdjustment(
+                price0,
+                precisionForPrice0);
+
+            return (price0AdjustedAmount, double.NaN);
+        }
+
+        static (double amount0, double amount1) CalculatePositionAmounts(
            double positionLiquidity,
            Price price,
            Price priceSqrt)
@@ -57,7 +71,7 @@ namespace Uniswap.GraphQL
             return (amount0, amount1);
         }
 
-        static double DecimalAdjustment(
+        static double DecimalTruncateAdjustment(
             double amount,
             string decimals,
             int? precisions)
@@ -72,6 +86,20 @@ namespace Uniswap.GraphQL
             }
 
             return adjustedAmount;
+        }
+
+        static double RoundAdjustment(
+            double amount,
+            int? precisions)
+        {
+            if (precisions.HasValue)
+            {
+                return Math.Round(
+                           amount * Math.Pow(10, precisions.Value))
+                       / Math.Pow(10, precisions.Value);
+            }
+
+            return amount;
         }
     }
 }
