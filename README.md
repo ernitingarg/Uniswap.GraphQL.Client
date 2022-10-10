@@ -50,13 +50,13 @@ in `app.config`. For example: for a given interval 60 seconds, lets say first tr
 	- If API still can not be connected, then send error `Unable to retrieve the data from server after 4 retries.`
 	- A new timer will be triggered at `[10:31:00]`.
 
-- There is also an webapi project, which exposes endpoint `positions` to allow you fetch the same information. Please check [demo](https://uniswap-v3.vercel.app/positions/245953) url.
+- There is also an webapi project, which exposes endpoint `positions` to allow you fetch the same information. On `Uniswap.WebApi` in visual studio, right click and select `Set as Startup project` and run the api.
 
 ![API output](./images/api.png)
 
 **Note:**
 - Format of api is `positions/<pool_id>/<token0_precision>/<token1_precision>/<currentprice_precision>`. Few examples:
-	- https://uniswap-v3.vercel.app/positions/245953  => Shows the information with no truncation.
-	- https://uniswap-v3.vercel.app/positions/245953/3 => Truncates only token0 position with 3 decimal precision
-	- https://uniswap-v3.vercel.app/positions/245953/3/6  => Truncates token0 position with 3 decimal precisions and token1 position with 6 precision.
-	- https://uniswap-v3.vercel.app/positions/245953/null/null/2 =>  Truncate only current price with 2 decimal precision.
+	- https://`<address>`/positions/245953  => Shows the information with no truncation.
+	- https://`<address>`/positions/245953/3 => Truncates only token0 position with 3 decimal precision
+	- https://`<address>`/positions/245953/3/6  => Truncates token0 position with 3 decimal precisions and token1 position with 6 precision.
+	- https://`<address>`/positions/245953/null/null/2 =>  Truncate only current price with 2 decimal precision.
