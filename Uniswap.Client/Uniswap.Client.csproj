@@ -50,6 +50,9 @@
     <Reference Include="GraphQL.Primitives, Version=4.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GraphQL.Primitives.4.0.2\lib\netstandard2.0\GraphQL.Primitives.dll</HintPath>
     </Reference>
+    <Reference Include="log4net, Version=2.0.14.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.14\lib\net45\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -104,7 +107,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
