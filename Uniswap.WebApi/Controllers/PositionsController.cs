@@ -23,29 +23,33 @@ namespace Uniswap.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("positions/{id}/{precision0?}/{precision1?}")]
+        [Route("positions/{id}/{precision0?}/{precision1?}/{precisionForCurrentPrice?}")]
         public async Task<IHttpActionResult> GetPosition(
             int id,
             int? precision0 = null,
-            int? precision1 = null)
+            int? precision1 = null,
+            int? precisionForCurrentPrice = null)
         {
             var result = await _uniswapGraphQl.GetLiquidityPosition(
                 id,
+                3,
                 precision0,
-                precision1);
+                precision1,
+                precisionForCurrentPrice);
 
             var ret = new
             {
                 Token0 = new
                 {
                     result.Position.Token0.Symbol,
-                    Amount = result.Position.Amount0
+                    Amount = result.Position.Position0Amount
                 },
                 Token1 = new
                 {
                     result.Position.Token1.Symbol,
-                    Amount = result.Position.Amount1
-                }
+                    Amount = result.Position.Position1Amount
+                },
+                CurrentPrice = result.Position.Price0Amount
             };
 
             return Ok(ret);
